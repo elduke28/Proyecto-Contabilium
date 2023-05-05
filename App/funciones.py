@@ -39,6 +39,9 @@ def ejecutar():
 		# Concatenamos los dataframes
 		df = pd.concat([df_arg,df_chi,df_urg], ignore_index=True)
 		
+		# Creamos la columna venta
+		df['venta'] =  [0 if plan == 'Prueba' else 1 for plan in df.plan_actual]
+	
 		# Eliminamos parte del origen crudo que trae errores
 		df.origen_crudo = df['origen_crudo'].str.replace('undefined\|', '', regex=True)
 
@@ -46,7 +49,7 @@ def ejecutar():
 		df_c= df.origen_crudo.str.split('|', expand=True)
 
 		# Separamos la columna por '-' y le asignamos los nombres
-		df_c[['tipo_anuncio', 'pais2', 'grupo_anuncio', 'mes_anuncio']] = df_c[4].str.split('-', expand=True)
+		df_c[['tipo_anuncio', 'pais2', 'grupo_anuncio', 'mes_anuncio','otro']] = df_c[4].str.split('-', expand=True)
 
 		# Asignamos nombre a las columnas faltantes
 		df_c.rename(columns={0: 'source', 1: 'canal', 2: 'objetivo',3: 'audiencia', 4: 'crudo'}, inplace=True)
@@ -58,17 +61,14 @@ def ejecutar():
 		df_c['segment'] = ['POS' if 'pos' in val else 'ERP' for val in df_c.tipo_anuncio]
 
 		# Eliminamos las columnas innecesarias
-		df_c = df_c.drop(['crudo','pais2'], axis=1)
+		df_c = df_c.drop(['crudo','pais2','otro'], axis=1)
 
 		# Concatenamos los registros inicial y desconcatenados
 		df = pd.concat([df, df_c], axis=1)
 
-		# Convertimos los caracteres a minúscula
-		#df = df.applymap(lambda s: s.lower() if type(s) == str else s)
-
+		
 		# Exportamos el archivo
-		#df.to_csv('Registros_mes.csv', date_format='%d/%m/%Y', index=False)
 		df.to_excel('Registro.xlsx', index=False)
-		#df.to_csv('Registros_total.csv', mode='a', index=False, header=False)
 		messagebox.showinfo("Finalizado", "El proceso se ha realizado con éxito.")
+		
 	else: messagebox.showwarning("Advertencia", "Debe cargar el archivo.")
